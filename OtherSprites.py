@@ -1,6 +1,6 @@
 import pygame
-from image import load_image
-from  gloabal_parametrs import param
+from data_manager import data_manager
+from parameters import params
 
 
 class Sprite(pygame.sprite.Sprite):
@@ -20,8 +20,8 @@ class Sprite(pygame.sprite.Sprite):
         for j in range(rows):
             for i in range(columns):
                 frame_location = (self.rect.w * i, self.rect.h * j)
-                self.frames.append(pygame.transform.scale(sheet.subsurface(pygame.Rect(frame_location, self.rect.size)), (param.SIZE_SPRITES, param.SIZE_SPRITES)))
-
+                self.frames.append(pygame.transform.scale(sheet.subsurface(pygame.Rect(frame_location, self.rect.size)),
+                                                          (params.SIZE_SPRITES, params.SIZE_SPRITES)))
 
 
 class Particle(Sprite):
@@ -30,7 +30,7 @@ class Particle(Sprite):
     """
     columns = 1
     rows = 3
-    image = load_image('Fx_02.png')
+    image = data_manager.load_image('laser_bullets.png')
 
     def __init__(self, x: int, y: int, all_sprites, particle_group):
         """Конструктор
@@ -51,33 +51,30 @@ class Particle(Sprite):
         # скорость движения пуль
         self.v = 90
 
-        self.r = param.SIZE_SPRITES + 20
+        self.r = params.SIZE_SPRITES + 20
         self.time = pygame.time.get_ticks()
 
     def update(self) -> None:
-        self.pos[1] -= self.v / param.FPS
+        self.pos[1] -= self.v / params.FPS
 
         self.rect = self.image.get_rect().move(
             self.pos[0], self.pos[1]
         )
 
         # каждые 20 очков идет увеличение скорости
-        if not (param.get_score() + 5) % 20:
+        if not (params.get_score() + 5) % 20:
             self.v += 1
 
-
-        if abs(self.time - pygame.time.get_ticks()) >= 500 and self.cur_frame < Particle.rows - 1: 
+        if abs(self.time - pygame.time.get_ticks()) >= 500 and self.cur_frame < Particle.rows - 1:
             self.cur_frame += 1
             self.image = self.frames[self.cur_frame]
             self.time = pygame.time.get_ticks()
 
 
-
 class EnemyShips(pygame.sprite.Sprite):
-    
     columns = 4
     rows = 1
-    image = load_image('enemyShip.png')
+    image = data_manager.load_image('ship_enemy.png')
 
     def __init__(self, x: int, y: int, all_sprites, enemy_group):
         """Конструктор
@@ -95,7 +92,7 @@ class EnemyShips(pygame.sprite.Sprite):
         self.pos = [x, y]
         # скорость движение врагов
         self.v = 10
- 
+
     def cut_sheet(self, sheet, columns, rows):
         """
  
@@ -112,8 +109,9 @@ class EnemyShips(pygame.sprite.Sprite):
         for j in range(rows):
             for i in range(columns):
                 frame_location = (self.rect.w * i, self.rect.h * j)
-                self.frames.append(pygame.transform.scale(sheet.subsurface(pygame.Rect(frame_location, self.rect.size)), (param.SIZE_SPRITES, param.SIZE_SPRITES)))
- 
+                self.frames.append(pygame.transform.scale(sheet.subsurface(pygame.Rect(frame_location, self.rect.size)),
+                                                          (params.SIZE_SPRITES, params.SIZE_SPRITES)))
+
     def update(self, particle_group):
         """
         обновление картинки
@@ -121,13 +119,13 @@ class EnemyShips(pygame.sprite.Sprite):
         """
         # self.cur_frame = (self.cur_frame + 1) % len(self.frames)
         # self.image = self.frames[self.cur_frame]
-        self.pos[1] += self.v / param.FPS
+        self.pos[1] += self.v / params.FPS
         self.rect = self.image.get_rect().move(
             self.pos[0], self.pos[1]
         )
 
         # за каждые 20 очков пользователя, скорость кораблей увеличивается
-        if not (param.get_score() + 1) % 20:
+        if not (params.get_score() + 1) % 20:
             self.v += 1
 
         sprite = pygame.sprite.spritecollideany(self, particle_group)
@@ -135,13 +133,13 @@ class EnemyShips(pygame.sprite.Sprite):
             self.cur_frame -= 1
             if self.cur_frame:
                 self.image = self.frames[self.cur_frame]
-                param.set_score(1)
+                params.set_score(1)
                 sprite.kill()
             else:
                 self.kill()
-                param.set_score(5)
+                params.set_score(5)
                 sprite.kill()
-        
+
     def cut_sheet(self, sheet, columns, rows):
         """
  
@@ -158,4 +156,5 @@ class EnemyShips(pygame.sprite.Sprite):
         for j in range(rows):
             for i in range(columns):
                 frame_location = (self.rect.w * i, self.rect.h * j)
-                self.frames.append(pygame.transform.scale(sheet.subsurface(pygame.Rect(frame_location, self.rect.size)), (param.SIZE_SPRITES - 10, param.SIZE_SPRITES - 10)))
+                self.frames.append(pygame.transform.scale(sheet.subsurface(pygame.Rect(frame_location, self.rect.size)),
+                                                          (params.SIZE_SPRITES - 10, params.SIZE_SPRITES - 10)))

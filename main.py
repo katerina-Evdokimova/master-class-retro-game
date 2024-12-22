@@ -1,14 +1,14 @@
 import pygame
 import random
-from image import load_image
-from OtherSprites import Sprite, EnemyShips, Particle
-from  gloabal_parametrs import param
+from data_manager import data_manager
+from OtherSprites import Sprite, EnemyShips
+from  parameters import params
 
 
 
 def draw_score(screen):
     font = pygame.font.Font(None, 50)
-    text = font.render(f"SCORE: {param.get_score()}", True, (100, 255, 10))
+    text = font.render(f"SCORE: {params.get_score()}", True, (100, 255, 10))
     text_x = width - text.get_width()
     text_y = 0
 
@@ -18,7 +18,7 @@ def draw_score(screen):
 class Ship(Sprite):
     columns = 4
     rows = 1
-    image = load_image('ship.png')
+    image = data_manager.load_image('ship.png')
 
     def __init__(self, x: int, y: int):
         """Конструктор
@@ -56,7 +56,7 @@ class Ship(Sprite):
         return self.cur_frame == Ship.columns - 1
  
     def update(self, *args):
-        FPS = param.FPS
+        FPS = params.FPS
 
         # Проверка на столкновение нашего корабля и корабля противника
         sprite = pygame.sprite.spritecollideany(self, enemy_group)
@@ -65,10 +65,10 @@ class Ship(Sprite):
             self.cur_frame += 1
             if self.cur_frame < Ship.columns - 1:
                 self.image = self.frames[self.cur_frame] # меняем картинку спрайта на более побитую
-                param.set_score(-5)
+                params.set_score(-5)
             else:
                 self.kill() # если закончились жизни, корабль погибает
-                param.set_score(-param.get_score()) # счет равен 0
+                params.set_score(-params.get_score()) # счет равен 0
             sprite.kill()
         
         
@@ -110,7 +110,7 @@ def main():
         draw_score(screen)
 		# обновление экрана
         pygame.display.flip()
-        time.tick(param.FPS)
+        time.tick(params.FPS)
 
         if len(enemy_group.sprites()) <= N // 2 or abs(times - pygame.time.get_ticks()) >= 3000:
             for x, y in [(random.randrange(1, width), -25) for _ in range(N)]:
@@ -126,7 +126,7 @@ if __name__ == '__main__':
     while running:
         pygame.init()
 
-        param.set_score(-param.get_score())
+        params.set_score(-params.get_score())
         N = 5
         time = pygame.time.Clock()
         all_sprites = pygame.sprite.Group()
@@ -134,15 +134,13 @@ if __name__ == '__main__':
         particle_group = pygame.sprite.Group()
         ship_group = pygame.sprite.Group()
 
-        
-
         size = width, height = 500, 600
-        bg = pygame.transform.scale(load_image('bg.jpg'), size)
         screen = pygame.display.set_mode(size)
+        bg = pygame.transform.scale(data_manager.load_image('background.png'), size)
 
         for x, y in [(random.randrange(1, width), -25) for _ in range(N)]:
             EnemyShips(x, y, all_sprites, enemy_group)
 
-        ship = Ship(width // 2, height - param.SIZE_SPRITES)
+        ship = Ship(width // 2, height - params.SIZE_SPRITES)
         running = main()
     
