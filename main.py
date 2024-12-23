@@ -8,7 +8,7 @@ from parameters import params
 def draw_score(screen):
     font = pygame.font.Font(None, 50)
     text = font.render(f"SCORE: {params.get_score()}", True, (100, 255, 10))
-    text_x = width - text.get_width()
+    text_x = params.get_width() - text.get_width()
     text_y = 0
 
     screen.blit(text, (text_x, text_y))
@@ -55,8 +55,7 @@ class Ship(Sprite):
         """
         return self.cur_frame == self.columns - 1
 
-    def update(self, *args, v=0):
-        self.v += v
+    def update(self, *args):
         FPS = params.FPS
         self.time += 1
 
@@ -95,29 +94,29 @@ class Ship(Sprite):
                 self.flag_down = False
 
         if self.flag_left:
-            self.x -= self.v
+            self.x -= self.v + params.get_boost()
         if self.flag_down:
-            self.y += self.v
+            self.y += self.v + params.get_boost()
         if self.flag_right:
-            self.x += self.v
+            self.x += self.v + params.get_boost()
         if self.flag_up:
-            self.y -= self.v
+            self.y -= self.v + params.get_boost()
 
         if self.y < 0:
             self.y = 0
-        elif self.y > height - self.rect.height:
-            self.y = height - self.rect.height
+        elif self.y > params.get_height() - self.rect.height:
+            self.y = params.get_height() - self.rect.height
         elif self.x < 0:
             self.x = 0
-        elif self.x > width - self.rect.width:
-            self.x = width - self.rect.width
+        elif self.x > params.get_width() - self.rect.width:
+            self.x = params.get_width() - self.rect.width
 
         self.rect = self.image.get_rect().move(
             self.x, self.y
         )
 
         # ЗДЕСЬ ЛОГИКУ ПОЯВЛЕНИЯ ПУЛЬ
-        if self.time >= 30:
+        if self.time >= 25:
             Particle(self.x, self.y - params.SIZE_SPRITES // 2, all_sprites, particle_group)
             self.time = 0
 
@@ -141,20 +140,16 @@ def main():
                 return False
             ship_group.update(event)
 
-        # отрисовка и изменение свойств объектов
+        # отрисовка объектов
         enemy_group.draw(screen)
         particle_group.draw(screen)
         all_sprites.draw(screen)
         ship_group.draw(screen)
 
-        # каждые 20 очков идет увеличение скорости
-        v = 0
-        if not (params.get_score() + 1) % 20:
-            v = 0.1
-
-        enemy_group.update(particle_group, v)
-        ship_group.update(v=v)
-        particle_group.update(v=v)
+        # изменение свойств объектов
+        enemy_group.update(particle_group)
+        ship_group.update()
+        particle_group.update()
         draw_score(screen)
 
         # обновление экрана
@@ -162,7 +157,7 @@ def main():
         clock.tick(params.FPS)
 
         if len(enemy_group.sprites()) <= N // 2 or time >= 180:
-            for x, y in [(random.randrange(1, width), -25) for _ in range(N)]:
+            for x, y in [(random.randrange(1, params.get_width()), -25) for _ in range(N)]:
                 ShipEnemy(x, y, all_sprites, enemy_group)
             time = 0
 
@@ -179,12 +174,11 @@ if __name__ == '__main__':
     particle_group = pygame.sprite.Group()
     ship_group = pygame.sprite.Group()
 
-    size = width, height = 500, 600
-    screen = pygame.display.set_mode(size)
-    bg = pygame.transform.scale(data_manager.background, size)
+    screen = pygame.display.set_mode(params.get_size())
+    bg = pygame.transform.scale(data_manager.background, params.get_size())
 
-    for x, y in [(random.randrange(1, width), -25) for _ in range(N)]:
+    for x, y in [(random.randrange(1, params.get_width()), -25) for _ in range(N)]:
         ShipEnemy(x, y, all_sprites, enemy_group)
 
-    ship = Ship(width // 2, height - params.SIZE_SPRITES)
+    ship = Ship(params.get_width() // 2, params.get_height() - params.SIZE_SPRITES)
     main()

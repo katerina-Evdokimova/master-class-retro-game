@@ -6,10 +6,12 @@ from parameters import params
 class Sprite(pygame.sprite.Sprite):
     pass
 
+
 class Particle(pygame.sprite.Sprite):
     """
     Класс пуль
     """
+
     def __init__(self, x: int, y: int, all_sprites, particle_group):
         """Конструктор
 
@@ -33,10 +35,12 @@ class Particle(pygame.sprite.Sprite):
         self.r = params.SIZE_SPRITES + 20
         self.time = 0
 
-    def update(self, v=0) -> None:
-        self.v += v
+    def update(self) -> None:
         self.time += 1
-        self.pos[1] -= self.v
+        self.pos[1] -= self.v + params.get_boost()
+
+        if self.pos[1] < 0:
+            self.kill()
 
         self.rect = self.image.get_rect().move(
             self.pos[0], self.pos[1]
@@ -68,14 +72,16 @@ class ShipEnemy(pygame.sprite.Sprite):
         # скорость движение врагов
         self.v = 1
 
-    def update(self, particle_group, v=0):
-        self.v += v
+    def update(self, particle_group):
         # self.cur_frame = (self.cur_frame + 1) % len(self.frames)
         # self.image = self.frames[self.cur_frame]
-        self.pos[1] += self.v
+        self.pos[1] += self.v + params.get_boost()
         self.rect = self.image.get_rect().move(
             self.pos[0], self.pos[1]
         )
+
+        if self.pos[1] > params.get_height():
+            self.kill()
 
         sprite = pygame.sprite.spritecollideany(self, particle_group)
         if sprite:
